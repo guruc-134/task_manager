@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
 const app = require('../src/app')
 const User = require('../src/models/user')
+// const bcrypt = require('bcryptjs')
 
 const userOneId = new mongoose.Types.ObjectId()
 const userOne = {
@@ -89,4 +90,67 @@ test("Should not delete account for unauthorized user", async () =>{
     .delete('/users/me')
     .send()
     .expect(401)
+})
+test('Should upload avatar', async ()=>{
+    await request(app)
+    .post('/users/me/avatar')
+    .set('Authorization',`Bearer ${userOne.tokens[0].token}`)
+    .attach('avatar','tests/fixtures/lion.jpg')
+    .expect(200)
+    const user = await User.findById(userOneId)
+    //  checking is the image is uploaded by 
+    // verifying the type of the user.avatar in Db is equal to Buffer
+    // expect.any(), checks if the expected value's type is any of the following mentioned 
+    //  in the params
+    expect(user.avatar).toEqual(expect.any(Buffer))
+})
+test("Should update valid user fields", async ()=>
+{
+    await request(app)
+    .patch('/users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({
+        name:'new test user',
+        email:'jest@test.com',
+        password:"testing456"
+    })
+    .expect(200)
+
+    var {name,email} = await User.findById(userOneId)
+    expect({name,email}).toEqual(
+        {
+            name:'new test user',
+            email:'jest@test.com'
+        }
+    )
+})
+test("Should not update invalid user fields", async ()=>
+{
+    // unauthorized user
+    await request(app)
+    .patch('/users/me')
+    .send({
+        name:'new test user',
+        email:'jest@test.com',
+        password:'testing456'
+    })
+    .expect(401)
+
+    //  invalid fields
+    await request(app)
+    .patch('/users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({
+        place:'vizag'
+    })
+    .expect(400)
+
+    //  invalid  values
+    await request(app)
+    .patch('/users/me')
+    .set('Authorization', `Bearer ${userOne.tokens[0].token}`)
+    .send({
+        email:'1234'
+    })
+    .expect(400)
 })
