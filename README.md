@@ -1,7 +1,7 @@
 # TASK MANAGER API
 
-## This Api supports many functions, features for building a fully functional user task management application with the following features.
-
+#### This Api supports many functions, features for building a fully functional user task management application with the following features.
+#### Testing done using jest
 # Features:
 * sends welcome mail after logging in
 * sends goodbye mail after user profile deletion
