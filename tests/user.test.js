@@ -1,29 +1,12 @@
 const request = require('supertest')
-const jwt = require('jsonwebtoken')
-const mongoose = require('mongoose')
 const app = require('../src/app')
 const User = require('../src/models/user')
 // const bcrypt = require('bcryptjs')
-
-const userOneId = new mongoose.Types.ObjectId()
-const userOne = {
-    _id : userOneId,
-    name: 'Test user',
-    email: 'test@jest.com',
-    password: 'testing123',
-    tokens:[
-        {
-            token:jwt.sign({_id:userOneId},process.env.JWT_SECRET)
-        }
-    ]
-}
+const {userOneId,userOne,setUp} = require('./fixtures/db')
 // before each is a jest lifecycle method which will be
 // running before every test(), here it performs the operation
 // of clearing the user database
-beforeEach(async ()=>{
-    await User.deleteMany()
-    await new User(userOne).save()
-})
+beforeEach(setUp)
 // tests
 test('Should signup a new user', async () => {
     const response = await request(app).post('/users').send({
